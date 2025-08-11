@@ -1090,9 +1090,10 @@
 
                 const today = new Date(getTodayDateString());
                 const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
                 // Обновляем заморозки текущего пользователя в Firestore
-                const currentUserRef = doc(db, `artifacts/${__app_id}/public/data/users`, currentUserId);
+                const currentUserRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
                 const currentUserData = localState.users[currentUserId]; // Get current user's data from local state
                 if (currentUserData && currentUserData.lastFreezeReset !== currentMonth) {
                     try {
@@ -1107,7 +1108,7 @@
                 }
 
                 // Проверка и обновление серий привычек текущего пользователя
-                const habitsCollectionRef = collection(db, `artifacts/${__app_id}/users/${currentUserId}/habits`);
+                const habitsCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/habits`);
                 try {
                     const q = query(habitsCollectionRef); // Fetch all habits for the current user
                     // Using onSnapshot to react to real-time updates directly for streak checks
@@ -1367,6 +1368,10 @@
                         measurementId: "G-WLHH0SYQ8Q"
                     };
 
+                    // Определяем appId для использования в путях Firestore
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+
                     console.log("Initializing Firebase with config:", firebaseConfig);
 
                     // Инициализация Firebase, если еще не инициализировано
@@ -1427,12 +1432,12 @@
 
                     // После успешной авторизации, убедимся, что данные пользователя существуют в Firestore
                     // и синхронизируем их с localState
-                    await syncUserDataWithFirestore();
+                    await syncUserDataWithFirestore(appId); // Передаем appId
 
                     // Установка слушателей Firestore
-                    setupChatListener();
-                    setupHabitsListener();
-                    setupUsersListener(); // Для рейтинга
+                    setupChatListener(appId);
+                    setupHabitsListener(appId);
+                    setupUsersListener(appId); // Для рейтинга
 
                     checkAllStreaks(); // Проверяем серии и заморозки после загрузки данных
                     renderAll(); // Рендерим все данные для авторизованного пользователя
@@ -1446,11 +1451,12 @@
              * Синхронизирует данные текущего пользователя между localState и Firestore.
              * Если пользователя нет в Firestore, он создается.
              * Затем localState.users[currentUserId] обновляется данными из Firestore.
+             * @param {string} appId - ID приложения для построения путей Firestore.
              */
-            async function syncUserDataWithFirestore() {
+            async function syncUserDataWithFirestore(appId) {
                 if (!db || !currentUserId || !loggedInUsername) return;
 
-                const userDocRef = doc(db, `artifacts/${__app_id}/public/data/users`, currentUserId);
+                const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
                 try {
                     const docSnap = await getDoc(userDocRef);
                     if (docSnap.exists()) {
@@ -1571,10 +1577,11 @@
                     showMessageModal('Ошибка: Пользователь не авторизован или Firebase не инициализирован.');
                     return;
                 }
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
                 try {
                     // Создаем новую привычку в Firestore
-                    const habitsCollectionRef = collection(db, `artifacts/${__app_id}/users/${currentUserId}/habits`);
+                    const habitsCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/habits`);
                     const newHabitDocRef = await addDoc(habitsCollectionRef, {
                         userId: currentUserId,
                         name: name,
@@ -1619,8 +1626,9 @@
                 }
 
                 if (!habitId || !db || !currentUserId) return;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-                const habitRef = doc(db, `artifacts/${__app_id}/users/${currentUserId}/habits`, habitId);
+                const habitRef = doc(db, `artifacts/${appId}/users/${currentUserId}/habits`, habitId);
                 const habit = localState.habits[habitId];
 
                 if (!habit) {
@@ -1666,8 +1674,9 @@
             // Обработчик для подтверждения удаления привычки
             confirmDeleteBtn.addEventListener('click', async () => {
                 if (!habitToDeleteId || !db || !currentUserId) return;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-                const habitRef = doc(db, `artifacts/${__app_id}/users/${currentUserId}/habits`, habitToDeleteId);
+                const habitRef = doc(db, `artifacts/${appId}/users/${currentUserId}/habits`, habitToDeleteId);
                 try {
                     await deleteDoc(habitRef);
                     console.log("Привычка удалена из Firestore.");
@@ -1757,7 +1766,8 @@
                 const option = e.target.closest('.avatar-option');
                 if (option && db && currentUserId) {
                     const iconClass = option.dataset.icon;
-                    const userDocRef = doc(db, `artifacts/${__app_id}/public/data/users`, currentUserId);
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
                     try {
                         await updateDoc(userDocRef, { avatar: iconClass });
                         console.log("Аватар пользователя обновлен в Firestore.");
@@ -1855,9 +1865,8 @@
             }
 
             // --- Firestore Listeners ---
-            function setupChatListener() {
+            function setupChatListener(appId) {
                 if (!db || !isAuthReady) return;
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const chatCollectionRef = collection(db, `artifacts/${appId}/public/data/chatMessages`);
 
                 // Используем onSnapshot для прослушивания изменений в реальном времени
@@ -1874,9 +1883,8 @@
                 });
             }
 
-            function setupHabitsListener() {
+            function setupHabitsListener(appId) {
                 if (!db || !currentUserId || !isAuthReady) return;
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const userHabitsCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/habits`);
 
                 onSnapshot(userHabitsCollectionRef, (snapshot) => {
@@ -1894,9 +1902,8 @@
                 });
             }
 
-            function setupUsersListener() {
+            function setupUsersListener(appId) {
                 if (!db || !isAuthReady) return;
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const publicUsersCollectionRef = collection(db, `artifacts/${appId}/public/data/users`);
 
                 onSnapshot(publicUsersCollectionRef, (snapshot) => {
