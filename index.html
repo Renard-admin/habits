@@ -34,22 +34,26 @@
 
         html, body {
             height: 100%;
-            overflow: hidden;
+            overflow: hidden; /* Prevent body scroll, pages manage their own scroll */
         }
 
         body {
             font-family: var(--font-main);
             background-color: var(--bg-main);
             color: var(--text-dark);
-            overscroll-behavior: none;
+            overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
         }
 
         /* --- СТРУКТУРА СТРАНИЦЫ --- */
         .page {
             display: none;
             flex-direction: column;
-            height: 100vh;
-            padding: 1rem;
+            height: 100vh; /* Full viewport height */
+            padding: 1rem; /* Consistent padding around pages */
+            position: absolute; /* Stack pages to show only one at a time */
+            width: 100%;
+            top: 0;
+            left: 0;
         }
 
         .page.active {
@@ -62,27 +66,32 @@
             align-items: center;
             padding: 1rem 0;
             margin-bottom: 1rem;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Prevent header from shrinking */
         }
 
         .page-header h1 {
-            font-size: 1.8rem;
+            font-size: clamp(1.5rem, 5vw, 2.5rem); /* Responsive font size */
             font-weight: 700;
             text-transform: lowercase;
+            text-align: center;
+            flex-grow: 1; /* Allow title to take available space */
         }
 
         .header-icon {
-            font-size: 1.8rem;
+            font-size: clamp(1.8rem, 6vw, 2.5rem); /* Responsive icon size */
             cursor: pointer;
             transition: transform 0.2s;
+            padding: 0 0.5rem; /* Add some touch padding */
         }
         .header-icon:hover {
             transform: scale(1.1);
         }
 
         .page-content {
-            flex-grow: 1;
-            overflow-y: auto;
+            flex-grow: 1; /* Content area fills remaining space */
+            overflow-y: auto; /* Enable vertical scrolling for content */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            padding-right: 0.5rem; /* Prevent content from being too close to scrollbar */
         }
         
         /* --- СТРАНИЦА ВХОДА --- */
@@ -91,7 +100,7 @@
             align-items: center;
         }
         .login-container {
-            width: 100%;
+            width: 90%; /* Responsive width */
             max-width: 350px;
             padding: 2rem;
             background-color: var(--bg-menu);
@@ -123,6 +132,10 @@
             font-family: var(--font-main);
             font-size: 1.2rem;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .login-container button:hover {
+            background-color: var(--bg-main);
         }
         #login-error {
             color: var(--color-error);
@@ -130,23 +143,25 @@
             height: 1.2em;
             font-weight: bold;
         }
+        /* Removed .login-credentials styles */
 
 
         /* --- БОКОВОЕ МЕНЮ --- */
         #side-menu {
             position: fixed;
             top: 0;
-            left: -100%;
-            width: 80%;
-            max-width: 300px;
+            left: -100%; /* Hidden by default */
+            width: 80%; /* Takes 80% of screen width */
+            max-width: 300px; /* Max width for larger screens */
             height: 100%;
             background-color: var(--bg-menu);
             color: var(--text-light);
             padding: 2rem;
             display: flex;
             flex-direction: column;
-            transition: left 0.3s ease-in-out;
+            transition: left 0.3s ease-in-out; /* Smooth slide-in/out */
             z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5); /* Add shadow for depth */
         }
 
         #side-menu.open {
@@ -159,11 +174,14 @@
             right: 1.5rem;
             font-size: 2rem;
             cursor: pointer;
+            padding: 0.5rem; /* Larger touch target */
         }
         
         .profile-info {
             text-align: center;
             margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
         }
 
         .profile-info .avatar {
@@ -205,11 +223,12 @@
         }
         .profile-stats i {
             margin-right: 0.5rem;
-            color: #4fc3f7;
+            color: #4fc3f7; /* Snowflake color */
         }
 
         .nav-links {
             list-style: none;
+            flex-grow: 1; /* Push content to top if needed */
         }
 
         .nav-links li {
@@ -265,6 +284,7 @@
             display: flex;
             align-items: center;
             border: 2px solid var(--text-dark);
+            min-height: 80px; /* Ensure consistent height */
         }
 
         .habit-card .avatar {
@@ -278,21 +298,27 @@
             align-items: center;
             margin-right: 1rem;
             overflow: hidden;
+            flex-shrink: 0; /* Prevent avatar from shrinking */
         }
         
-        .habit-card .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Changed from img to i for stickers */
+        .habit-card .avatar i {
+            font-size: 2.5rem; /* Adjust size for icons */
+            color: var(--bg-dark); /* Color of the icon */
         }
 
         .habit-info {
-            flex-grow: 1;
+            flex-grow: 1; /* Takes available space */
+            overflow: hidden; /* Hide overflow text */
+            padding-right: 0.5rem; /* Space before actions */
         }
         
         .habit-info h3 {
             font-size: 1.2rem;
             margin-bottom: 0.25rem;
+            white-space: nowrap; /* Prevent habit name from wrapping */
+            overflow: hidden; /* Hide overflow */
+            text-overflow: ellipsis; /* Add ellipsis for long names */
         }
 
         .habit-streak {
@@ -302,13 +328,14 @@
         }
 
         .habit-streak i {
-            color: #ff9800;
+            color: #ff9800; /* Fire icon color */
             margin-right: 0.5rem;
         }
         
         .habit-actions {
             display: flex;
             align-items: center;
+            flex-shrink: 0; /* Prevent actions from shrinking */
         }
 
         .habit-actions .menu-dots {
@@ -316,6 +343,7 @@
             font-size: 1.2rem;
             margin-right: 0.5rem;
             opacity: 0.8;
+            padding: 0.5rem; /* Larger touch target */
         }
 
         .action-btn {
@@ -332,6 +360,7 @@
             justify-content: center;
             align-items: center;
             transition: background-color 0.2s, transform 0.2s;
+            flex-shrink: 0;
         }
         .action-btn:hover {
             transform: scale(1.05);
@@ -352,16 +381,19 @@
             display: flex;
             align-items: center;
             border: 2px solid var(--text-dark);
+            min-height: 70px;
         }
         .rating-card .place {
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 4vw, 1.8rem); /* Responsive font size */
             font-weight: 700;
             min-width: 40px;
             text-align: center;
+            flex-shrink: 0;
         }
         .rating-card .avatar {
             width: 50px;
             height: 50px;
+            min-width: 50px; /* Ensure avatar doesn't shrink */
             background-color: var(--bg-dark);
             border-radius: 50%;
             margin: 0 1rem;
@@ -369,12 +401,18 @@
             justify-content: center;
             align-items: center;
             font-size: 1.5rem;
+            flex-shrink: 0;
         }
         .rating-card .user-info {
             flex-grow: 1;
+            overflow: hidden;
+            padding-right: 0.5rem;
         }
         .rating-card .user-info h3 {
             font-size: 1.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .rating-card .user-info p {
             opacity: 0.8;
@@ -382,6 +420,7 @@
         .rating-card .view-habits-btn {
             width: 45px;
             height: 45px;
+            min-width: 45px; /* Ensure button doesn't shrink */
             background-color: var(--bg-main);
             color: var(--text-dark);
             border-radius: 50%;
@@ -390,33 +429,43 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        .rating-card .view-habits-btn:hover {
+            transform: scale(1.05);
         }
         
         /* --- СТРАНИЦА ЧАТА --- */
-        #chat-page { }
+        #chat-page { 
+            /* Page container already flex column */
+        }
         .chat-container {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* Ensure chat messages don't overflow container */
         }
         .chat-messages {
             flex-grow: 1;
-            overflow-y: auto;
+            overflow-y: auto; /* Enable scrolling for messages */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Stack messages vertically */
             gap: 1rem;
             padding-bottom: 1rem;
+            padding-right: 0.5rem; /* Prevent content from being too close to scrollbar */
         }
         .chat-message {
             display: flex;
             align-items: flex-start;
             gap: 0.75rem;
-            max-width: 80%;
+            max-width: 85%; /* Slightly larger max width for messages */
         }
         .chat-message .avatar {
             width: 40px;
             height: 40px;
-            min-width: 40px;
+            min-width: 40px; /* Ensure avatar doesn't shrink */
             background-color: var(--bg-dark);
             color: var(--text-light);
             border-radius: 50%;
@@ -424,12 +473,16 @@
             justify-content: center;
             align-items: center;
             font-size: 1.2rem;
+            flex-shrink: 0;
         }
         .message-content {
             background-color: var(--bg-card);
             color: var(--text-light);
             padding: 0.75rem 1rem;
             border-radius: 15px;
+            flex-grow: 1; /* Message content takes available space */
+            word-wrap: break-word; /* Break long words */
+            overflow-wrap: break-word; /* Newer property for word wrapping */
         }
         .message-content .author {
             font-weight: 700;
@@ -437,11 +490,11 @@
             font-size: 0.9rem;
         }
         .chat-message.current-user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
+            align-self: flex-end; /* Align user's messages to the right */
+            flex-direction: row-reverse; /* Reverse order for current user's messages */
         }
         .chat-message.current-user .message-content {
-            background-color: #3f5e4f;
+            background-color: var(--bg-menu); /* Different background for current user */
         }
         .chat-input-area {
             flex-shrink: 0;
@@ -462,6 +515,7 @@
         #send-btn {
             width: 50px;
             height: 50px;
+            min-width: 50px;
             flex-shrink: 0;
             border-radius: 50%;
             border: none;
@@ -469,6 +523,10 @@
             color: var(--text-light);
             font-size: 1.5rem;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #send-btn:hover {
+            background-color: var(--bg-card);
         }
 
         /* --- МОДАЛЬНЫЕ ОКНА --- */
@@ -506,10 +564,12 @@
             right: 1rem;
             font-size: 1.5rem;
             cursor: pointer;
+            padding: 0.5rem;
         }
         .modal-content h2 {
             margin-bottom: 1.5rem;
             text-align: center;
+            font-size: clamp(1.5rem, 5vw, 2rem);
         }
         .modal-content input {
             width: 100%;
@@ -530,11 +590,20 @@
             background-color: var(--bg-card);
             color: var(--text-light);
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .modal-content button:hover {
+            background-color: var(--bg-dark);
         }
         .modal-buttons {
             display: flex;
             gap: 1rem;
             margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .modal-buttons button {
+            flex: 1 1 auto;
+            min-width: 120px;
         }
         .modal-content .delete-btn {
              background-color: var(--color-delete);
@@ -542,15 +611,22 @@
         #confirm-delete-btn {
             background-color: var(--color-delete);
         }
+        #confirm-delete-btn:hover {
+            background-color: darken(var(--color-delete), 10%);
+        }
 
         .user-habits-list {
             list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .user-habits-list li {
             display: flex;
             justify-content: space-between;
             padding: 0.5rem 0;
             border-bottom: 1px solid var(--bg-card);
+            font-size: 1.1rem;
         }
         .user-habits-list li:last-child {
             border-bottom: none;
@@ -558,6 +634,7 @@
         #chart-container {
             width: 100%;
             height: 300px;
+            margin-bottom: 1.5rem;
         }
         
         #avatar-selection {
@@ -566,6 +643,8 @@
             gap: 1rem;
             max-height: 300px;
             overflow-y: auto;
+            padding-right: 0.5rem;
+            -webkit-overflow-scrolling: touch;
         }
         .avatar-option {
             font-size: 2rem;
@@ -581,6 +660,40 @@
             transform: scale(1.1);
         }
         
+        /* New styles for habit sticker selection */
+        #habit-sticker-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 0.75rem; /* Slightly smaller gap */
+            max-height: 200px; /* Limit height */
+            overflow-y: auto;
+            padding: 0.5rem; /* Padding for scrollable area */
+            background-color: rgba(0,0,0,0.1); /* Subtle background */
+            border-radius: 10px;
+            margin-bottom: 1rem; /* Space before button */
+        }
+        .habit-sticker-option {
+            font-size: 1.8rem; /* Slightly smaller than avatar options */
+            padding: 0.5rem;
+            border-radius: 10px;
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s, background-color 0.2s, border 0.2s;
+            border: 2px solid transparent; /* Default transparent border */
+        }
+        .habit-sticker-option:hover {
+            transform: scale(1.08);
+            background-color: var(--bg-dark);
+        }
+        .habit-sticker-option.selected {
+            border: 2px solid var(--text-dark); /* Highlight selected sticker */
+            background-color: var(--bg-main); /* Change background when selected */
+            color: var(--bg-dark);
+            transform: scale(1.05);
+        }
+
         /* --- ИНДИКАТОР ЗАГРУЗКИ --- */
         .loader {
             border: 5px solid #f3f3f3;
@@ -617,6 +730,8 @@
             <input type="password" id="login-password" placeholder="Пароль">
             <div id="login-error"></div>
             <button id="login-btn">Войти</button>
+
+            <!-- Removed login credentials display -->
         </div>
     </div>
 
@@ -638,7 +753,8 @@
         <header class="page-header">
             <i id="rating-menu-btn" class="fas fa-bars header-icon"></i>
             <h1>overall rating</h1>
-            <div></div> <!-- Пустой div для выравнивания -->
+            <!-- Пустой div для выравнивания, чтобы заголовок был по центру -->
+            <i style="visibility: hidden;" class="fas fa-plus header-icon"></i> 
         </header>
         <main id="rating-list" class="page-content">
             <!-- Карточки пользователей будут здесь -->
@@ -650,7 +766,7 @@
         <header class="page-header">
             <i id="chat-menu-btn" class="fas fa-bars header-icon"></i>
             <h1>general chat</h1>
-            <i class="fas fa-comments"></i>
+            <i class="fas fa-comments header-icon"></i> <!-- Added header-icon class for consistency -->
         </header>
         <div class="chat-container">
             <main id="chat-messages" class="chat-messages">
@@ -690,11 +806,15 @@
             <h2>Новая привычка</h2>
             <div id="add-habit-form">
                 <input type="text" id="new-habit-name" placeholder="Название (напр. Спорт)">
+                <p style="text-align: center; margin: 1rem 0 0.5rem; color: var(--text-dark);">Выберите стикер:</p>
+                <div id="habit-sticker-selection">
+                    <!-- Stickers will be populated here -->
+                </div>
                 <button id="save-habit-btn">Создать</button>
             </div>
-            <div id="loader-container">
+            <div id="loader-container" style="display: none;">
                 <div class="loader"></div>
-                <p>ИИ генерирует иконку...</p>
+                <p>Выбирайте стикер...</p>
             </div>
         </div>
     </div>
@@ -750,10 +870,16 @@
 
 
     <script type="module">
+/*
+ * Import Firebase SDKs.
+ * Note: Firebase is initialized but not directly used for chat or habit data storage in this version.
+ * Data persistence is handled via localStorage to keep the example self-contained.
+ * Firebase analytics is initialized as per the original user's request.
+ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration (provided by user)
 const firebaseConfig = {
   apiKey: "AIzaSyCpWdzhXdKpQhpuf9Vv9-z30YM2h4uS9Jw",
   authDomain: "habits-18e0c.firebaseapp.com",
@@ -792,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const chartModal = document.getElementById('chart-modal');
         const chartHabitName = document.getElementById('chart-habit-name');
-        const chartDeleteHabitBtn = document.getElementById('chart-delete-habit-btn');
+        const chartDeleteHabitBtn = document.getElementById('chart-delete-habit-btn'); 
         let habitChart = null;
 
         const modalCloseBtns = document.querySelectorAll('.modal-close-btn');
@@ -814,21 +940,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginUsernameInput = document.getElementById('login-username');
         const loginPasswordInput = document.getElementById('login-password');
         const loginErrorEl = document.getElementById('login-error');
+        // Removed credentialsList, as it's no longer needed in HTML
 
         const loaderContainer = document.getElementById('loader-container');
         const addHabitForm = document.getElementById('add-habit-form');
 
+        // New DOM element and variable for sticker selection
+        const habitStickerSelection = document.getElementById('habit-sticker-selection');
+        let selectedHabitSticker = null; // To store the chosen sticker
+
         let CURRENT_USER_ID = null;
 
+        // Список доступных иконок для аватара пользователя
         const AVATAR_OPTIONS = [
             'fa-user-secret', 'fa-user-astronaut', 'fa-user-ninja', 'fa-user-doctor', 
             'fa-user-graduate', 'fa-user-tie', 'fa-user-tag', 'fa-user-crown',
             'fa-ghost', 'fa-dragon', 'fa-hippo', 'fa-otter', 'fa-robot', 'fa-cat', 'fa-dog'
         ];
 
+        // New array for habit stickers
+        const HABIT_STICKER_OPTIONS = [
+            'fa-dumbbell', 'fa-book-open', 'fa-carrot', 'fa-handshake', 'fa-code',
+            'fa-palette', 'fa-music', 'fa-meditation', 'fa-running', 'fa-tooth',
+            'fa-coffee', 'fa-leaf', 'fa-bicycle', 'fa-shower', 'fa-money-bill-wave',
+            'fa-pen-nib', 'fa-camera', 'fa-chess-knight', 'fa-seedling', 'fa-bolt',
+            'fa-cloud-moon', 'fa-globe-americas', 'fa-brain', 'fa-lightbulb', 'fa-pizza-slice',
+            'fa-gamepad', 'fa-paint-brush', 'fa-headphones', 'fa-briefcase', 'fa-heart',
+            'fa-star', 'fa-sun', 'fa-moon', 'fa-umbrella', 'fa-flask', 'fa-bug'
+        ];
+
+
         // --- УПРАВЛЕНИЕ СОСТОЯНИЕМ (STATE) ---
+        // Объект, хранящий все данные приложения (пользователи, привычки, чат)
         let state = {};
 
+        /**
+         * Инициализирует начальное состояние приложения, включая предопределенных пользователей.
+         */
         function initializeState() {
              state = {
                 users: {
@@ -840,44 +988,68 @@ document.addEventListener('DOMContentLoaded', () => {
                     'user6': { id: 'user6', name: 'Samandar', avatar: 'fa-user-tie', password: '5454', freezesUsed: 0, lastFreezeReset: '2025-08' },
                     'user7': { id: 'user7', name: 'Mark', avatar: 'fa-user-tag', password: '6969', freezesUsed: 0, lastFreezeReset: '2025-08' }
                 },
-                habits: {},
-                chat: []
+                habits: {}, // Привычки будут добавляться динамически
+                chat: []    // Сообщения чата
             };
         }
 
+        /**
+         * Загружает состояние приложения из localStorage.
+         * Сохраняет предопределенных пользователей, но обновляет их данные (заморозки, аватарки)
+         * из сохраненного состояния, если оно существует.
+         */
         function loadState() {
             const savedState = localStorage.getItem('habitTrackerState');
-            initializeState(); // Always start with fresh users
+            initializeState(); // Всегда начинаем со свежих пользователей по умолчанию
             if (savedState) {
                 const parsedState = JSON.parse(savedState);
                 state.habits = parsedState.habits || {};
                 state.chat = parsedState.chat || [];
-                // Update freezes and avatars from saved users data if it exists
+                // Обновляем данные пользователей из сохраненного состояния, сохраняя их изначальный список
                 if (parsedState.users) {
                     Object.keys(state.users).forEach(userId => {
                         if (parsedState.users[userId]) {
+                            // Сохраняем логины/пароли из initializeState, обновляем динамические поля
                             state.users[userId].freezesUsed = parsedState.users[userId].freezesUsed || 0;
                             state.users[userId].lastFreezeReset = parsedState.users[userId].lastFreezeReset || '2025-08';
-                            state.users[userId].avatar = parsedState.users[userId].avatar || 'fa-user';
+                            state.users[userId].avatar = parsedState.users[userId].avatar || 'fa-user'; // Если аватар не сохранен, используем дефолт
                         }
                     });
                 }
             }
+            // populateLoginCredentials(); // Removed call to populate credentials
         }
 
+        /**
+         * Сохраняет текущее состояние приложения в localStorage.
+         */
         function saveState() {
             localStorage.setItem('habitTrackerState', JSON.stringify(state));
         }
         
+        // Removed populateLoginCredentials function
+
+
         // --- ЛОГИКА СБРОСА СЕРИЙ И ЗАМОРОЗОК ---
+        /**
+         * Возвращает сегодняшнюю дату в формате 'YYYY-MM-DD'.
+         * Использована фиксированная дата для предсказуемости в демонстрации.
+         */
         function getTodayDateString() {
+            // В реальном приложении: return new Date().toISOString().split('T')[0];
             return '2025-08-11'; 
         }
 
+        /**
+         * Проверяет и обновляет серии привычек и количество заморозок для всех пользователей.
+         * Если день пропущен и есть заморозки, тратит заморозку, иначе сбрасывает серию.
+         * Сбрасывает заморозки каждый новый месяц.
+         */
         function checkAllStreaks() {
             const today = new Date(getTodayDateString());
             const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 
+            // Сброс заморозок для всех пользователей в начале нового месяца
             Object.values(state.users).forEach(user => {
                 if (user.lastFreezeReset !== currentMonth) {
                     user.freezesUsed = 0;
@@ -885,75 +1057,106 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            // Проверка и обновление серий привычек
             Object.values(state.habits).forEach(habit => {
+                // Пропускаем привычки без даты последнего действия
                 if (!habit.lastActionDate) return;
                 
                 const lastAction = new Date(habit.lastActionDate);
                 const diffDays = Math.ceil((today - lastAction) / (1000 * 60 * 60 * 24));
                 
+                // Если прошло больше 1 дня с последнего действия (т.е. день был пропущен)
                 if (diffDays > 1) {
                     const user = state.users[habit.userId];
-                    if (user.freezesUsed < 5) {
-                        user.freezesUsed++;
+                    // Если у пользователя есть доступные заморозки
+                    if (user && user.freezesUsed < 5) {
+                        user.freezesUsed++; // Тратим одну заморозку
+                        // Устанавливаем lastActionDate на вчера, чтобы сохранить серию
                         const yesterday = new Date(getTodayDateString());
                         yesterday.setDate(yesterday.getDate() - 1);
                         habit.lastActionDate = yesterday.toISOString().split('T')[0];
                     } else {
+                        // Если заморозок нет, сбрасываем серию
                         habit.streak = 0;
                     }
                 }
             });
+            saveState(); // Сохраняем изменения после проверки
         }
 
         // --- УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ (UI) ---
+        /**
+         * Показывает указанную страницу, скрывая все остальные.
+         * @param {string} pageId - ID страницы для отображения.
+         */
         function showPage(pageId) {
             pages.forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            closeMenu();
+            closeMenu(); // Закрываем боковое меню при переходе на новую страницу
+            // Перерендеринг для обновления данных
+            renderAll(); 
         }
 
+        /** Открывает боковое меню. */
         function openMenu() {
             sideMenu.classList.add('open');
             menuOverlay.classList.add('visible');
+            updateProfileInfo(); // Обновляем инфо в профиле при открытии меню
         }
 
+        /** Закрывает боковое меню. */
         function closeMenu() {
             sideMenu.classList.remove('open');
             menuOverlay.classList.remove('visible');
         }
         
+        /**
+         * Открывает модальное окно.
+         * @param {HTMLElement} modal - Элемент модального окна.
+         */
         function openModal(modal) {
             modal.classList.add('visible');
         }
 
+        /**
+         * Закрывает модальное окно.
+         * @param {HTMLElement} modal - Элемент модального окна.
+         */
         function closeModal(modal) {
             modal.classList.remove('visible');
         }
 
         // --- РЕНДЕРИНГ (ОТРИСОВКА) ---
+        /** Обновляет все динамические части интерфейса. */
         function renderAll() {
-            if (!CURRENT_USER_ID) return;
+            if (!CURRENT_USER_ID) return; // Не рендерим, если пользователь не авторизован
             renderHabits();
             renderRatings();
             renderChat();
             updateProfileInfo();
         }
 
+        /** Рендерит список привычек текущего пользователя. */
         function renderHabits() {
-            habitsList.innerHTML = '';
+            habitsList.innerHTML = ''; // Очищаем список
             const currentUserHabits = Object.values(state.habits).filter(h => h.userId === CURRENT_USER_ID);
+            
             if (currentUserHabits.length === 0) {
-                habitsList.innerHTML = '<p style="text-align:center; opacity: 0.7;">У вас пока нет привычек. Нажмите "+", чтобы добавить первую.</p>';
+                habitsList.innerHTML = '<p style="text-align:center; opacity: 0.7; margin-top: 2rem; color: var(--text-dark);">У вас пока нет привычек. Нажмите "+", чтобы добавить первую.</p>';
                 return;
             }
+            
             currentUserHabits.forEach(habit => {
                 const today = getTodayDateString();
+                // Проверяем, было ли действие выполнено сегодня (галочка или крестик)
                 const isActionDoneToday = habit.lastActionDate === today;
 
                 const card = document.createElement('div');
                 card.className = 'habit-card';
                 card.innerHTML = `
-                    <div class="avatar"><img src="${habit.imageUrl}" alt="${habit.name}" onerror="this.onerror=null;this.src='https://placehold.co/60x60/8fbc94/22222d?text=...';"></div>
+                    <div class="avatar">
+                        <i class="fas ${habit.iconClass}"></i> <!-- Changed from <img> to <i> and using iconClass -->
+                    </div>
                     <div class="habit-info">
                         <h3>${habit.name}</h3>
                         <div class="habit-streak">
@@ -971,15 +1174,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
+        /** Рендерит список пользователей в рейтинге. */
         function renderRatings() {
             ratingList.innerHTML = '';
+            // Вычисляем рейтинг для каждого пользователя
             const userRatings = Object.values(state.users).map(user => {
                 const userHabits = Object.values(state.habits).filter(h => h.userId === user.id);
                 const totalStreak = userHabits.reduce((sum, h) => sum + h.streak, 0);
                 const avgStreak = userHabits.length > 0 ? (totalStreak / userHabits.length) : 0;
-                return { ...user, avgStreak: avgStreak.toFixed(1) };
+                return { ...user, avgStreak: avgStreak.toFixed(1) }; // Средняя серия, округленная до 1 знака
             });
 
+            // Сортируем пользователей по рейтингу (по убыванию)
             userRatings.sort((a, b) => b.avgStreak - a.avgStreak);
 
             userRatings.forEach((user, index) => {
@@ -998,11 +1204,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /** Рендерит сообщения в чате. */
         function renderChat() {
             chatMessagesContainer.innerHTML = '';
             state.chat.forEach(msg => {
                 const user = state.users[msg.userId];
-                if (!user) return;
+                // Если пользователя нет (удален), пропускаем сообщение
+                if (!user) return; 
                 const messageEl = document.createElement('div');
                 messageEl.className = `chat-message ${msg.userId === CURRENT_USER_ID ? 'current-user' : ''}`;
                 messageEl.innerHTML = `
@@ -1012,20 +1220,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="text">${msg.text}</div>
                     </div>
                 `;
-                chatMessagesContainer.append(messageEl);
+                chatMessagesContainer.append(messageEl); // Добавляем сообщение в конец (новые внизу)
             });
+            // Прокручиваем чат до последнего сообщения
             chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         }
 
+        /** Обновляет информацию профиля в боковом меню. */
         function updateProfileInfo() {
+            if (!CURRENT_USER_ID) return; // Не обновляем, если нет текущего пользователя
             const currentUser = state.users[CURRENT_USER_ID];
             profileNameEl.textContent = currentUser.name;
             const profileAvatar = document.querySelector('.profile-info .avatar i');
-            profileAvatar.className = `fas ${currentUser.avatar}`;
+            profileAvatar.className = `fas ${currentUser.avatar}`; // Обновляем иконку аватара
             
+            // Вычисляем оставшиеся заморозки
             const remainingFreezes = 5 - currentUser.freezesUsed;
             profileFreezesEl.innerHTML = `<i class="fas fa-snowflake"></i>Заморозок: ${remainingFreezes}`;
             
+            // Вычисляем и отображаем место пользователя в общем рейтинге
             const userRatings = Object.values(state.users).map(user => {
                 const userHabits = Object.values(state.habits).filter(h => h.userId === user.id);
                 const totalStreak = userHabits.reduce((sum, h) => sum + h.streak, 0);
@@ -1038,6 +1251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // --- АВТОРИЗАЦИЯ ---
+        /** Обрабатывает попытку входа пользователя. */
         function handleLogin() {
             const username = loginUsernameInput.value;
             const password = loginPasswordInput.value;
@@ -1046,16 +1260,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (user && user.password === password) {
                 CURRENT_USER_ID = user.id;
-                loginErrorEl.textContent = '';
-                showPage('habits-page');
-                checkAllStreaks();
-                saveState();
-                renderAll();
+                loginErrorEl.textContent = ''; // Очищаем сообщение об ошибке
+                showPage('habits-page'); // Переходим на страницу привычек
+                checkAllStreaks(); // Проверяем серии и заморозки при входе
+                saveState(); // Сохраняем состояние после входа
+                renderAll(); // Рендерим все данные для авторизованного пользователя
             } else {
                 loginErrorEl.textContent = 'Неверный логин или пароль';
             }
         }
 
+        // Обработчики событий для страницы входа
         loginBtn.addEventListener('click', handleLogin);
         loginPasswordInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handleLogin();
@@ -1063,92 +1278,131 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // --- ОБРАБОТЧИКИ СОБЫТИЙ (ОСНОВНОЕ ПРИЛОЖЕНИЕ) ---
+        // Обработчики для кнопок открытия/закрытия бокового меню
         menuButtons.forEach(btn => btn.addEventListener('click', openMenu));
         menuCloseBtn.addEventListener('click', closeMenu);
         menuOverlay.addEventListener('click', closeMenu);
 
+        // Обработчики для навигационных ссылок в боковом меню
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
-                e.preventDefault();
-                showPage(e.currentTarget.dataset.page + '-page');
+                e.preventDefault(); // Отменяем действие по умолчанию для ссылок
+                showPage(e.currentTarget.dataset.page + '-page'); // Переключаем страницу
             });
         });
         
+        // Обработчики для кнопок закрытия модальных окон
         modalCloseBtns.forEach(btn => btn.addEventListener('click', (e) => closeModal(e.target.closest('.modal'))));
 
+        // Обработчик для кнопки "Добавить привычку"
         addHabitBtn.addEventListener('click', () => {
-            loaderContainer.style.display = 'none';
-            addHabitForm.style.display = 'block';
-            openModal(addHabitModal);
+            loaderContainer.style.display = 'none'; // Скрываем лоадер, если он был виден
+            addHabitForm.style.display = 'block'; // Показываем форму
+            newHabitNameInput.value = ''; // Очищаем поле ввода
+            populateHabitStickers(); // Populate the sticker selection
+            selectedHabitSticker = null; // Reset selection
+            openModal(addHabitModal); // Открываем модальное окно
         });
 
+        // New function to populate habit stickers
+        function populateHabitStickers() {
+            habitStickerSelection.innerHTML = '';
+            HABIT_STICKER_OPTIONS.forEach(iconClass => {
+                const option = document.createElement('div');
+                option.className = 'habit-sticker-option';
+                option.dataset.icon = iconClass;
+                option.innerHTML = `<i class="fas ${iconClass}"></i>`;
+                // Add click listener to select sticker
+                option.addEventListener('click', () => {
+                    // Remove 'selected' class from previously selected sticker
+                    const currentSelected = habitStickerSelection.querySelector('.habit-sticker-option.selected');
+                    if (currentSelected) {
+                        currentSelected.classList.remove('selected');
+                    }
+                    // Add 'selected' class to the clicked sticker
+                    option.classList.add('selected');
+                    selectedHabitSticker = iconClass; // Store the selected icon class
+                });
+                habitStickerSelection.appendChild(option);
+            });
+        }
+
+        // Обработчик для кнопки "Создать" привычку
         saveHabitBtn.addEventListener('click', async () => {
             const name = newHabitNameInput.value.trim();
-            if (!name) return;
-
-            loaderContainer.style.display = 'block';
-            addHabitForm.style.display = 'none';
+            if (!name) {
+                alert('Пожалуйста, введите название привычки.'); // Use custom modal instead of alert in real app
+                return;
+            }
+            if (!selectedHabitSticker) {
+                alert('Пожалуйста, выберите стикер для привычки.'); // Use custom modal instead of alert in real app
+                return;
+            }
 
             try {
-                const imageUrl = await generateHabitImage(name);
-                
+                // Создаем новую привычку
                 const newHabit = {
-                    id: 'habit' + Date.now(),
+                    id: 'habit' + Date.now(), // Уникальный ID привычки
                     userId: CURRENT_USER_ID,
                     name: name,
-                    imageUrl: imageUrl,
-                    streak: 0,
-                    lastActionDate: null,
-                    history: {}
+                    iconClass: selectedHabitSticker, // Store the icon class
+                    streak: 0, // Начальная серия
+                    lastActionDate: null, // Дата последнего действия
+                    history: {} // История выполнения для графика
                 };
-                state.habits[newHabit.id] = newHabit;
+                state.habits[newHabit.id] = newHabit; // Добавляем привычку в состояние
                 
-                saveState();
-                renderAll();
-                newHabitNameInput.value = '';
+                saveState(); // Сохраняем состояние
+                renderAll(); // Перерендеринг для отображения новой привычки
+                newHabitNameInput.value = ''; // Очищаем поле ввода
+                selectedHabitSticker = null; // Reset selected sticker
                 closeModal(addHabitModal);
 
             } catch (error) {
-                console.error("Image generation failed:", error);
-                alert("Не удалось сгенерировать иконку. Попробуйте снова.");
-                loaderContainer.style.display = 'none';
-                addHabitForm.style.display = 'block';
+                console.error("Failed to add habit:", error);
+                alert("Не удалось добавить привычку. Пожалуйста, попробуйте еще раз."); 
             }
         });
 
+        // Делегирование событий для кнопок привычек (галочка, крестик, три точки)
         habitsList.addEventListener('click', (e) => {
             const today = getTodayDateString();
+
+            // Обработка кнопки "Выполнено" (галочка)
             const completeBtn = e.target.closest('.complete-btn');
             if (completeBtn && !completeBtn.classList.contains('disabled')) {
                 const habitId = completeBtn.dataset.habitId;
                 const habit = state.habits[habitId];
-                habit.streak++;
-                habit.lastActionDate = today;
-                habit.history[today] = 1;
+                habit.streak++; // Увеличиваем серию
+                habit.lastActionDate = today; // Обновляем дату последнего действия
+                habit.history[today] = 1; // Записываем в историю как выполненное
                 saveState();
                 renderAll();
             }
 
+            // Обработка кнопки "Пропущено" (крестик)
             const skipBtn = e.target.closest('.skip-btn');
             if (skipBtn && !skipBtn.classList.contains('disabled')) {
                 const habitId = skipBtn.dataset.habitId;
                 const habit = state.habits[habitId];
-                habit.lastActionDate = today;
-                habit.history[today] = 0;
+                habit.lastActionDate = today; // Обновляем дату последнего действия
+                habit.history[today] = 0; // Записываем в историю как пропущенное
                 saveState();
                 renderAll();
             }
 
+            // Обработка кнопки "Меню" (три точки)
             const menuDots = e.target.closest('.menu-dots');
             if (menuDots) {
                 const habitId = menuDots.dataset.habitId;
-                showChart(habitId);
+                showChart(habitId); // Показываем график
             }
         });
 
+        // Обработчик для подтверждения удаления привычки
         confirmDeleteBtn.addEventListener('click', () => {
             if (habitToDeleteId) {
-                delete state.habits[habitToDeleteId];
+                delete state.habits[habitToDeleteId]; // Удаляем привычку из состояния
                 habitToDeleteId = null;
                 saveState();
                 renderAll();
@@ -1156,12 +1410,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Обработчик для отмены удаления привычки
         cancelDeleteBtn.addEventListener('click', () => {
             habitToDeleteId = null;
             closeModal(confirmDeleteModal);
         });
 
-        
+        // Делегирование событий для кнопок просмотра привычек пользователей в рейтинге
         ratingList.addEventListener('click', (e) => {
             const viewBtn = e.target.closest('.view-habits-btn');
             if (viewBtn) {
@@ -1171,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 document.getElementById('modal-user-name').textContent = `Привычки: ${user.name}`;
                 const listEl = document.getElementById('modal-user-habits-list');
-                listEl.innerHTML = '';
+                listEl.innerHTML = ''; // Очищаем список
                 if (userHabits.length === 0) {
                     listEl.innerHTML = '<li>У пользователя пока нет привычек.</li>';
                 } else {
@@ -1181,27 +1436,31 @@ document.addEventListener('DOMContentLoaded', () => {
                         listEl.appendChild(li);
                     });
                 }
-                openModal(viewUserHabitsModal);
+                openModal(viewUserHabitsModal); // Открываем модальное окно
             }
         });
 
+        /** Обрабатывает отправку сообщения в чат. */
         function handleSendMessage() {
             const text = chatInput.value.trim();
             if (text) {
                 const newMessage = {
                     userId: CURRENT_USER_ID,
-                    text: text
+                    text: text,
+                    timestamp: Date.now() // Добавляем метку времени для сортировки (хотя чат просто добавляет в конец)
                 };
-                state.chat.push(newMessage);
+                state.chat.push(newMessage); // Добавляем новое сообщение
+                // Ограничиваем количество сообщений в чате до 30
                 if (state.chat.length > 30) {
-                    state.chat.shift();
+                    state.chat.shift(); // Удаляем самое старое сообщение
                 }
-                saveState();
-                renderChat();
-                chatInput.value = '';
+                saveState(); // Сохраняем состояние чата
+                renderChat(); // Перерендеринг чата
+                chatInput.value = ''; // Очищаем поле ввода
             }
         }
 
+        // Обработчики событий для чата (кнопка отправки и Enter)
         sendBtn.addEventListener('click', handleSendMessage);
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -1210,8 +1469,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // --- КАСТОМИЗАЦИЯ АВАТАРА ---
+        /** Открывает модальное окно выбора аватара. */
         profileAvatarBtn.addEventListener('click', () => {
-            avatarSelection.innerHTML = '';
+            avatarSelection.innerHTML = ''; // Очищаем список аватаров
             AVATAR_OPTIONS.forEach(iconClass => {
                 const option = document.createElement('div');
                 option.className = 'avatar-option';
@@ -1219,51 +1479,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 option.innerHTML = `<i class="fas ${iconClass}"></i>`;
                 avatarSelection.appendChild(option);
             });
-            openModal(avatarModal);
+            openModal(avatarModal); // Открываем модальное окно
         });
 
+        // Обработчик для выбора нового аватара
         avatarSelection.addEventListener('click', (e) => {
             const option = e.target.closest('.avatar-option');
             if (option) {
                 const iconClass = option.dataset.icon;
-                state.users[CURRENT_USER_ID].avatar = iconClass;
+                state.users[CURRENT_USER_ID].avatar = iconClass; // Обновляем аватар пользователя
                 saveState();
-                updateProfileInfo();
-                closeModal(avatarModal);
+                updateProfileInfo(); // Обновляем информацию в меню
+                closeModal(avatarModal); // Закрываем модальное окно
             }
         });
         
-        // --- ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (ИИ) ---
-        async function generateHabitImage(habitName) {
-            const apiKey = "AIzaSyBtMdGiiABPxtLTdLOikn2KHhN9gpBGzBM"; // API-ключ будет предоставлен средой выполнения
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-            
-            const prompt = `minimalist icon, ${habitName}, simple logo, vector art style, on a solid color background, no text, 2d`;
+        // --- ЗАМЕНА ГЕНЕРАЦИИ ИЗОБРАЖЕНИЙ НА СТИКЕРЫ ---
+        // Удалена функция generateHabitImage, так как теперь используются статические стикеры.
 
-            const payload = {
-                instances: [{ prompt: prompt }],
-                parameters: { "sampleCount": 1 }
-            };
-            
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
-                return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-            } else {
-                throw new Error("No image data in API response");
-            }
-        }
-
+        /**
+         * Отображает график прогресса для выбранной привычки.
+         * @param {string} habitId - ID привычки для отображения графика.
+         */
         function showChart(habitId) {
             const habit = state.habits[habitId];
             chartHabitName.textContent = `График: ${habit.name}`;
@@ -1271,19 +1508,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const labels = [];
             const data = [];
             
+            // Собираем данные за последние 30 дней
             for (let i = 29; i >= 0; i--) {
                 const date = new Date(getTodayDateString());
                 date.setDate(date.getDate() - i);
                 const dateString = date.toISOString().split('T')[0];
                 labels.push(date.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit'}));
                 
+                // 1 - выполнено, 0 - пропущено, null - нет данных
                 if (habit.history[dateString] === 1) data.push(1);
                 else if (habit.history[dateString] === 0) data.push(0);
                 else data.push(null);
             }
 
+            // Уничтожаем предыдущий график, если он есть
             if (habitChart) habitChart.destroy();
 
+            // Создаем новый график Chart.js
             const ctx = document.getElementById('habitChart').getContext('2d');
             habitChart = new Chart(ctx, {
                 type: 'line',
@@ -1296,12 +1537,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         backgroundColor: 'rgba(255, 255, 255, 0.2)',
                         fill: true,
                         tension: 0.1,
-                        spanGaps: true
+                        spanGaps: true // Позволяет пропускать пустые данные
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, // Важно для responsive
                     scales: {
                         y: {
                             ticks: {
@@ -1309,7 +1550,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 callback: function(value) {
                                     if (value === 1) return 'Выполнено';
                                     if (value === 0) return 'Пропущено';
-                                    return '';
+                                    return ''; // Скрываем другие метки
                                 }
                             },
                              grid: { color: 'rgba(255, 255, 255, 0.2)' }
@@ -1319,23 +1560,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             grid: { color: 'rgba(255, 255, 255, 0.2)' }
                         }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { legend: { display: false } } // Скрываем легенду
                 }
             });
 
+            // Обработчик кнопки удаления привычки в модальном окне графика
             chartDeleteHabitBtn.onclick = () => {
-                closeModal(chartModal);
-                habitToDeleteId = habitId;
-                openModal(confirmDeleteModal);
+                closeModal(chartModal); // Закрываем график
+                habitToDeleteId = habitId; // Сохраняем ID привычки для удаления
+                openModal(confirmDeleteModal); // Открываем подтверждение удаления
             };
 
-            openModal(chartModal);
+            openModal(chartModal); // Открываем модальное окно графика
         }
 
         // --- ИНИЦИАЛИЗАЦИЯ ---
-        loadState();
+        loadState(); // Загружаем состояние при загрузке страницы
     });
     </script>
 </body>
 </html>
-
