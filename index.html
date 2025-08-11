@@ -1235,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (ИИ) ---
         async function generateHabitImage(habitName) {
-            const apiKey = ""; // API-ключ будет предоставлен средой выполнения
+            const apiKey = "AIzaSyBtMdGiiABPxtLTdLOikn2KHhN9gpBGzBM"; // API-ключ будет предоставлен средой выполнения
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
             
             const prompt = `minimalist icon, ${habitName}, simple logo, vector art style, on a solid color background, no text, 2d`;
@@ -1338,3 +1338,4 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 </body>
 </html>
+
