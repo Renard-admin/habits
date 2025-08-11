@@ -1703,7 +1703,7 @@
                     
                     document.getElementById('modal-user-name').textContent = `Привычки: ${user.name}`;
                     const listEl = document.getElementById('modal-user-habits-list');
-                    listEl.innerHTML = ''; // Очищаем список
+                    list.innerHTML = ''; // Очищаем список
 
                     const userHabits = Object.values(localState.habits).filter(h => h.userId === userIdToView);
 
@@ -1713,7 +1713,7 @@
                         userHabits.forEach(h => {
                             const li = document.createElement('li');
                             li.innerHTML = `<span>${h.name}</span><span><i class="fas fa-fire"></i> ${h.streak}</span>`;
-                            listEl.appendChild(li);
+                            list.appendChild(li);
                         });
                     }
                     openModal(viewUserHabitsModal); // Открываем модальное окно
