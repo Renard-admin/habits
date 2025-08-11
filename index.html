@@ -1255,9 +1255,20 @@
             /** Рендерит список пользователей в рейтинге. */
             function renderRatings(usersData) {
                 ratingList.innerHTML = '';
-                // Вычисляем рейтинг для каждого пользователя
-                const userRatings = Object.values(usersData).map(user => {
+                const uniqueUsers = {};
+                // Дедупликация пользователей по имени, берем первого найденного
+                Object.values(usersData).forEach(user => {
+                    if (!uniqueUsers[user.name]) {
+                        uniqueUsers[user.name] = user;
+                    }
+                });
+
+                // Вычисляем рейтинг для каждого уникального пользователя
+                const userRatings = Object.values(uniqueUsers).map(user => {
                     // Filter habits that belong to this user based on their Firebase UID
+                    // NOTE: This now means habits are filtered by the *specific Firebase UID* linked to the unique user.name entry that was selected above.
+                    // If multiple Firebase UIDs are associated with one user.name, only the habits of the first UID found for that name will contribute.
+                    // This is a trade-off given the current auth model.
                     const userHabits = Object.values(localState.habits).filter(h => h.userId === user.id);
                     const totalStreak = userHabits.reduce((sum, h) => sum + h.streak, 0);
                     const avgStreak = userHabits.length > 0 ? (totalStreak / userHabits.length) : 0;
@@ -1335,16 +1346,32 @@
                 profileFreezesEl.innerHTML = `<i class="fas fa-snowflake"></i>Заморозок: ${remainingFreezes}`;
 
                 // Вычисляем и отображаем место пользователя в общем рейтинге
-                const userRatings = Object.values(localState.users).map(user => {
-                    // Filter habits that belong to this user based on their Firebase UID
+                // Для подсчета рейтинга здесь также используем дедупликацию по имени,
+                // чтобы избежать некорректного ранжирования из-за дубликатов Firebase UID для одного логина.
+                const uniqueUsersForRanking = {};
+                 Object.values(localState.users).forEach(user => {
+                    // Предполагаем, что первый встреченный UID для данного имени является "основным"
+                    if (!uniqueUsersForRanking[user.name]) {
+                        uniqueUsersForRanking[user.name] = user;
+                    }
+                });
+
+                const userRatings = Object.values(uniqueUsersForRanking).map(user => {
+                    // Фильтруем привычки по UID пользователя, который выбран как "основной" для этого имени.
                     const userHabits = Object.values(localState.habits).filter(h => h.userId === user.id);
                     const totalStreak = userHabits.reduce((sum, h) => sum + h.streak, 0);
                     const avgStreak = userHabits.length > 0 ? (totalStreak / userHabits.length) : 0;
-                    return { id: user.id, avgStreak };
+                    return { id: user.id, name: user.name, avgStreak }; // Включаем имя для сравнения
                 }).sort((a, b) => b.avgStreak - a.avgStreak);
 
-                const currentUserRank = userRatings.findIndex(u => u.id === currentUserId) + 1;
-                profileRatingEl.textContent = `rating: ${currentUserRank}`;
+                // Находим ранг текущего пользователя по его логину
+                const currentUserRankEntry = userRatings.find(u => u.name === loggedInUsername);
+                if (currentUserRankEntry) {
+                    const currentUserRank = userRatings.findIndex(u => u.id === currentUserRankEntry.id) + 1;
+                    profileRatingEl.textContent = `rating: ${currentUserRank}`;
+                } else {
+                    profileRatingEl.textContent = `rating: -`; // Если текущий пользователь не найден в рейтинге (маловероятно)
+                }
             }
 
             // --- АВТОРИЗАЦИЯ И ИНИЦИАЛИЗАЦИЯ FIREBASE ---
@@ -1703,7 +1730,7 @@
                     
                     document.getElementById('modal-user-name').textContent = `Привычки: ${user.name}`;
                     const listEl = document.getElementById('modal-user-habits-list');
-                    list.innerHTML = ''; // Очищаем список
+                    listEl.innerHTML = ''; // Очищаем список
 
                     const userHabits = Object.values(localState.habits).filter(h => h.userId === userIdToView);
 
@@ -1713,7 +1740,7 @@
                         userHabits.forEach(h => {
                             const li = document.createElement('li');
                             li.innerHTML = `<span>${h.name}</span><span><i class="fas fa-fire"></i> ${h.streak}</span>`;
-                            list.appendChild(li);
+                            listEl.appendChild(li);
                         });
                     }
                     openModal(viewUserHabitsModal); // Открываем модальное окно
@@ -1915,7 +1942,8 @@
                             localState.users[currentUserId] = { ...doc.data(), id: currentUserId };
                         }
                     });
-                    renderRatings(Object.values(localState.users)); // Рендерим рейтинг
+                    // renderRatings(Object.values(localState.users)); // Рендерим рейтинг - теперь вызывается с дедупликацией
+                    renderRatings(localState.users); // Передаем объект, чтобы дедупликация могла использовать все данные
                     updateProfileInfo(); // Обновляем профиль, так как рейтинг зависит от других пользователей
                 }, (error) => {
                     console.error("Ошибка при получении данных пользователей для рейтинга:", error);
