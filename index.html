@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер Привычек</title>
+    
+    <!-- Подключение шрифтов и иконок -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- ОБЩИЕ СТИЛИ И ПЕРЕМЕННЫЕ --- */
+        :root {
+            --bg-main: #8fbc94;
+            --bg-card: #4a7c59;
+            --bg-menu: #3f5e4f;
+            --bg-dark: #22222d;
+            --text-light: #ffffff;
+            --text-dark: #000000;
+            --color-error: #e57373;
+            --color-delete: #c62828;
+            --font-main: 'Inconsolata', 'True Typewriter', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            overscroll-behavior: none;
+        }
+
+        /* --- СТРУКТУРА СТРАНИЦЫ --- */
+        .page {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            padding: 1rem;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: lowercase;
+        }
+
+        .header-icon {
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .header-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .page-content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        /* --- СТРАНИЦА ВХОДА --- */
+        #login-page {
+            justify-content: center;
+            align-items: center;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 350px;
+            padding: 2rem;
+            background-color: var(--bg-menu);
+            border-radius: 20px;
+            border: 3px solid var(--text-dark);
+            color: var(--text-light);
+            text-align: center;
+        }
+        .login-container h1 {
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--text-dark);
+            font-family: var(--font-main);
+            font-size: 1.1rem;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 10px;
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        #login-error {
+            color: var(--color-error);
+            margin-top: 1rem;
+            height: 1.2em;
+            font-weight: bold;
+        }
+
+
+        /* --- БОКОВОЕ МЕНЮ --- */
+        #side-menu {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100%;
+            background-color: var(--bg-menu);
+            color: var(--text-light);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        #side-menu.open {
+            left: 0;
+        }
+
+        #menu-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        
+        .profile-info {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .profile-info .avatar {
+            width: 80px;
+            height: 80px;
+            background-color: var(--bg-dark);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            border: 3px solid var(--text-light);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .profile-info .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        .profile-stats {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        .profile-stats p {
+            font-size: 1.1rem;
+        }
+        .profile-stats i {
+            margin-right: 0.5rem;
+            color: #4fc3f7;
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-links a:hover {
+            background-color: var(--bg-card);
+        }
+
+        .nav-links a i {
+            width: 40px;
+            text-align: center;
+            margin-right: 1rem;
+        }
+
+        #menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        #menu-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- КАРТОЧКА ПРИВЫЧКИ --- */
+        .habit-card {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border-radius: 20px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--text-dark);
+        }
+
+        .habit-card .avatar {
+            min-width: 60px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--bg-main);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 1rem;
+            overflow: hidden;
+        }
+        
+        .habit-card .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .habit-info {
+            flex-grow: 1;
+        }
+        
+        .habit-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .habit-streak {
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+
+        .habit-streak i {
+            color: #ff9800;
+            margin-right: 0.5rem;
+        }
+        
+        .habit-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .habit-actions .menu-dots {
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .action-btn {
+            width: 45px;
+            height: 45px;
+            background-color: var(--bg-main);
+            color: var(--bg-dark);
+            border: 2px solid var(--text-dark);
+            border-radius: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+        .action-btn.disabled {
+            background-color: #6a8a70;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* --- СТРАНИЦА РЕЙТИНГА --- */
+        .rating-card {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border-radius: 20px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--text-dark);
+        }
+        .rating-card .place {
+            font-size: 1.5rem;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+        }
+        .rating-card .avatar {
+            width: 50px;
+            height: 50px;
+            background-color: var(--bg-dark);
+            border-radius: 50%;
+            margin: 0 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+        }
+        .rating-card .user-info {
+            flex-grow: 1;
+        }
+        .rating-card .user-info h3 {
+            font-size: 1.2rem;
+        }
+        .rating-card .user-info p {
+            opacity: 0.8;
+        }
+        .rating-card .view-habits-btn {
+            width: 45px;
+            height: 45px;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* --- СТРАНИЦА ЧАТА --- */
+        #chat-page { }
+        .chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-bottom: 1rem;
+        }
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            max-width: 80%;
+        }
+        .chat-message .avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        .message-content {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+        }
+        .message-content .author {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+        .chat-message.current-user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .chat-message.current-user .message-content {
+            background-color: #3f5e4f;
+        }
+        .chat-input-area {
+            flex-shrink: 0;
+            padding-top: 1rem;
+            background-color: var(--bg-main);
+            display: flex;
+            gap: 1rem;
+        }
+        #chat-input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 2px solid var(--bg-dark);
+            background-color: var(--text-light);
+            font-family: var(--font-main);
+            font-size: 1rem;
+        }
+        #send-btn {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* --- МОДАЛЬНЫЕ ОКНА --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: var(--bg-main);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            border: 3px solid var(--text-dark);
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-content h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 0.75rem;
+            font-family: var(--font-main);
+            font-size: 1.1rem;
+            border-radius: 10px;
+            border: 2px solid var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        .modal-content button {
+            width: 100%;
+            padding: 0.75rem;
+            font-family: var(--font-main);
+            font-size: 1.1rem;
+            border-radius: 10px;
+            border: none;
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .modal-content .delete-btn {
+             background-color: var(--color-delete);
+        }
+        #confirm-delete-btn {
+            background-color: var(--color-delete);
+        }
+
+        .user-habits-list {
+            list-style: none;
+        }
+        .user-habits-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--bg-card);
+        }
+        .user-habits-list li:last-child {
+            border-bottom: none;
+        }
+        #chart-container {
+            width: 100%;
+            height: 300px;
+        }
+        
+        #avatar-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .avatar-option {
+            font-size: 2rem;
+            padding: 0.5rem;
+            border-radius: 10px;
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .avatar-option:hover {
+            transform: scale(1.1);
+        }
+        
+        /* --- ИНДИКАТОР ЗАГРУЗКИ --- */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--bg-card);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #loader-container {
+            display: none;
+            text-align: center;
+        }
+        #loader-container p {
+            color: var(--text-dark);
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ======================= СТРАНИЦА ВХОДА ======================= -->
+    <div id="login-page" class="page active">
+        <div class="login-container">
+            <h1>Вход</h1>
+            <input type="text" id="login-username" placeholder="Логин">
+            <input type="password" id="login-password" placeholder="Пароль">
+            <div id="login-error"></div>
+            <button id="login-btn">Войти</button>
+        </div>
+    </div>
+
+
+    <!-- ======================= СТРАНИЦА ПРИВЫЧЕК ======================= -->
+    <div id="habits-page" class="page">
+        <header class="page-header">
+            <i id="habits-menu-btn" class="fas fa-bars header-icon"></i>
+            <h1>habits</h1>
+            <i id="add-habit-btn" class="fas fa-plus header-icon"></i>
+        </header>
+        <main id="habits-list" class="page-content">
+            <!-- Карточки привычек будут здесь -->
+        </main>
+    </div>
+
+    <!-- ======================= СТРАНИЦА РЕЙТИНГА ======================= -->
+    <div id="rating-page" class="page">
+        <header class="page-header">
+            <i id="rating-menu-btn" class="fas fa-bars header-icon"></i>
+            <h1>overall rating</h1>
+            <div></div> <!-- Пустой div для выравнивания -->
+        </header>
+        <main id="rating-list" class="page-content">
+            <!-- Карточки пользователей будут здесь -->
+        </main>
+    </div>
+
+    <!-- ======================= СТРАНИЦА ЧАТА ======================= -->
+    <div id="chat-page" class="page">
+        <header class="page-header">
+            <i id="chat-menu-btn" class="fas fa-bars header-icon"></i>
+            <h1>general chat</h1>
+            <i class="fas fa-comments"></i>
+        </header>
+        <div class="chat-container">
+            <main id="chat-messages" class="chat-messages">
+                <!-- Сообщения чата будут здесь -->
+            </main>
+            <footer class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Введите сообщение...">
+                <button id="send-btn"><i class="fas fa-arrow-right"></i></button>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- ======================= БОКОВОЕ МЕНЮ ======================= -->
+    <div id="menu-overlay"></div>
+    <aside id="side-menu">
+        <i id="menu-close-btn" class="fas fa-times"></i>
+        <div class="profile-info">
+            <div class="avatar" id="profile-avatar-btn"><i class="fas fa-user"></i></div>
+            <h2 id="profile-name">User</h2>
+            <p id="profile-rating">rating: -</p>
+        </div>
+        <div class="profile-stats">
+            <p id="profile-freezes"><i class="fas fa-snowflake"></i>Заморозок: 5</p>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" data-page="habits"><i class="fas fa-fire"></i> habits</a></li>
+            <li><a href="#" data-page="rating"><i class="fas fa-trophy"></i> overall rating</a></li>
+            <li><a href="#" data-page="chat"><i class="fas fa-comments"></i> general chat</a></li>
+        </ul>
+    </aside>
+
+    <!-- ======================= МОДАЛЬНЫЕ ОКНА ======================= -->
+    <!-- Модальное окно для добавления привычки -->
+    <div id="add-habit-modal" class="modal">
+        <div class="modal-content">
+            <i class="fas fa-times modal-close-btn"></i>
+            <h2>Новая привычка</h2>
+            <div id="add-habit-form">
+                <input type="text" id="new-habit-name" placeholder="Название (напр. Спорт)">
+                <button id="save-habit-btn">Создать</button>
+            </div>
+            <div id="loader-container">
+                <div class="loader"></div>
+                <p>ИИ генерирует иконку...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра привычек пользователя -->
+    <div id="view-user-habits-modal" class="modal">
+        <div class="modal-content">
+            <i class="fas fa-times modal-close-btn"></i>
+            <h2 id="modal-user-name">Привычки пользователя</h2>
+            <ul id="modal-user-habits-list" class="user-habits-list">
+                <!-- Список привычек пользователя -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Модальное окно для графика -->
+    <div id="chart-modal" class="modal">
+        <div class="modal-content">
+            <i class="fas fa-times modal-close-btn"></i>
+            <h2 id="chart-habit-name">График прогресса</h2>
+            <div id="chart-container">
+                <canvas id="habitChart"></canvas>
+            </div>
+            <div class="modal-buttons" style="margin-top: 1.5rem;">
+                 <button id="chart-delete-habit-btn" class="delete-btn">Удалить эту привычку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для выбора аватара -->
+    <div id="avatar-modal" class="modal">
+        <div class="modal-content">
+            <i class="fas fa-times modal-close-btn"></i>
+            <h2>Выберите аватар</h2>
+            <div id="avatar-selection">
+                <!-- Опции аватаров будут здесь -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для подтверждения удаления -->
+    <div id="confirm-delete-modal" class="modal">
+        <div class="modal-content">
+            <i class="fas fa-times modal-close-btn"></i>
+            <h2>Удалить привычку?</h2>
+            <p>Это действие нельзя будет отменить. Весь прогресс по этой привычке будет потерян.</p>
+            <div class="modal-buttons">
+                <button id="cancel-delete-btn">Отмена</button>
+                <button id="confirm-delete-btn">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCpWdzhXdKpQhpuf9Vv9-z30YM2h4uS9Jw",
+  authDomain: "habits-18e0c.firebaseapp.com",
+  projectId: "habits-18e0c",
+  storageBucket: "habits-18e0c.appspot.com",
+  messagingSenderId: "239058005640",
+  appId: "1:239058005640:web:156207465680c0a2fd793d",
+  measurementId: "G-WLHH0SYQ8Q"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+document.addEventListener('DOMContentLoaded', () => {
+        // --- ОБЪЯВЛЕНИЕ ПЕРЕМЕННЫХ И DOM-ЭЛЕМЕНТОВ ---
+        const pages = document.querySelectorAll('.page');
+        const menuButtons = document.querySelectorAll('.fa-bars');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const sideMenu = document.getElementById('side-menu');
+        const menuCloseBtn = document.getElementById('menu-close-btn');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        const addHabitBtn = document.getElementById('add-habit-btn');
+        const addHabitModal = document.getElementById('add-habit-modal');
+        const saveHabitBtn = document.getElementById('save-habit-btn');
+        const newHabitNameInput = document.getElementById('new-habit-name');
+        const habitsList = document.getElementById('habits-list');
+
+        const ratingList = document.getElementById('rating-list');
+        const viewUserHabitsModal = document.getElementById('view-user-habits-modal');
+        
+        const chatMessagesContainer = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        const chartModal = document.getElementById('chart-modal');
+        const chartHabitName = document.getElementById('chart-habit-name');
+        const chartDeleteHabitBtn = document.getElementById('chart-delete-habit-btn');
+        let habitChart = null;
+
+        const modalCloseBtns = document.querySelectorAll('.modal-close-btn');
+
+        const profileNameEl = document.getElementById('profile-name');
+        const profileRatingEl = document.getElementById('profile-rating');
+        const profileFreezesEl = document.getElementById('profile-freezes');
+        const profileAvatarBtn = document.getElementById('profile-avatar-btn');
+        const avatarModal = document.getElementById('avatar-modal');
+        const avatarSelection = document.getElementById('avatar-selection');
+        
+        const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        let habitToDeleteId = null;
+
+        const loginPage = document.getElementById('login-page');
+        const loginBtn = document.getElementById('login-btn');
+        const loginUsernameInput = document.getElementById('login-username');
+        const loginPasswordInput = document.getElementById('login-password');
+        const loginErrorEl = document.getElementById('login-error');
+
+        const loaderContainer = document.getElementById('loader-container');
+        const addHabitForm = document.getElementById('add-habit-form');
+
+        let CURRENT_USER_ID = null;
+
+        const AVATAR_OPTIONS = [
+            'fa-user-secret', 'fa-user-astronaut', 'fa-user-ninja', 'fa-user-doctor', 
+            'fa-user-graduate', 'fa-user-tie', 'fa-user-tag', 'fa-user-crown',
+            'fa-ghost', 'fa-dragon', 'fa-hippo', 'fa-otter', 'fa-robot', 'fa-cat', 'fa-dog'
+        ];
+
+        // --- УПРАВЛЕНИЕ СОСТОЯНИЕМ (STATE) ---
+        let state = {};
+
+        function initializeState() {
+             state = {
+                users: {
+                    'user1': { id: 'user1', name: 'Renard', avatar: 'fa-user-secret', password: '121212', freezesUsed: 0, lastFreezeReset: '2025-08' },
+                    'user2': { id: 'user2', name: 'Umid', avatar: 'fa-user-astronaut', password: '4545', freezesUsed: 0, lastFreezeReset: '2025-08' },
+                    'user3': { id: 'user3', name: 'Rakhat', avatar: 'fa-user-ninja', password: '3030', freezesUsed: 0, lastFreezeReset: '2025-08' },
+                    'user4': { id: 'user4', name: 'Akmal', avatar: 'fa-user-doctor', password: '7070', freezesUsed: 0, lastFreezeReset: '2025-08' },
+                    'user5': { id: 'user5', name: 'Kiril', avatar: 'fa-user-graduate', password: '9090', freezesUsed: 0, lastFreezeReset: '2025-08' },
+                    'user6': { id: 'user6', name: 'Samandar', avatar: 'fa-user-tie', password: '5454', freezesUsed: 0, lastFreezeReset: '2025-08' },
+                    'user7': { id: 'user7', name: 'Mark', avatar: 'fa-user-tag', password: '6969', freezesUsed: 0, lastFreezeReset: '2025-08' }
+                },
+                habits: {},
+                chat: []
+            };
+        }
+
+        function loadState() {
+            const savedState = localStorage.getItem('habitTrackerState');
+            initializeState(); // Always start with fresh users
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                state.habits = parsedState.habits || {};
+                state.chat = parsedState.chat || [];
+                // Update freezes and avatars from saved users data if it exists
+                if (parsedState.users) {
+                    Object.keys(state.users).forEach(userId => {
+                        if (parsedState.users[userId]) {
+                            state.users[userId].freezesUsed = parsedState.users[userId].freezesUsed || 0;
+                            state.users[userId].lastFreezeReset = parsedState.users[userId].lastFreezeReset || '2025-08';
+                            state.users[userId].avatar = parsedState.users[userId].avatar || 'fa-user';
+                        }
+                    });
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('habitTrackerState', JSON.stringify(state));
+        }
+        
+        // --- ЛОГИКА СБРОСА СЕРИЙ И ЗАМОРОЗОК ---
+        function getTodayDateString() {
+            return '2025-08-11'; 
+        }
+
+        function checkAllStreaks() {
+            const today = new Date(getTodayDateString());
+            const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+            Object.values(state.users).forEach(user => {
+                if (user.lastFreezeReset !== currentMonth) {
+                    user.freezesUsed = 0;
+                    user.lastFreezeReset = currentMonth;
+                }
+            });
+
+            Object.values(state.habits).forEach(habit => {
+                if (!habit.lastActionDate) return;
+                
+                const lastAction = new Date(habit.lastActionDate);
+                const diffDays = Math.ceil((today - lastAction) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 1) {
+                    const user = state.users[habit.userId];
+                    if (user.freezesUsed < 5) {
+                        user.freezesUsed++;
+                        const yesterday = new Date(getTodayDateString());
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        habit.lastActionDate = yesterday.toISOString().split('T')[0];
+                    } else {
+                        habit.streak = 0;
+                    }
+                }
+            });
+        }
+
+        // --- УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ (UI) ---
+        function showPage(pageId) {
+            pages.forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            closeMenu();
+        }
+
+        function openMenu() {
+            sideMenu.classList.add('open');
+            menuOverlay.classList.add('visible');
+        }
+
+        function closeMenu() {
+            sideMenu.classList.remove('open');
+            menuOverlay.classList.remove('visible');
+        }
+        
+        function openModal(modal) {
+            modal.classList.add('visible');
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('visible');
+        }
+
+        // --- РЕНДЕРИНГ (ОТРИСОВКА) ---
+        function renderAll() {
+            if (!CURRENT_USER_ID) return;
+            renderHabits();
+            renderRatings();
+            renderChat();
+            updateProfileInfo();
+        }
+
+        function renderHabits() {
+            habitsList.innerHTML = '';
+            const currentUserHabits = Object.values(state.habits).filter(h => h.userId === CURRENT_USER_ID);
+            if (currentUserHabits.length === 0) {
+                habitsList.innerHTML = '<p style="text-align:center; opacity: 0.7;">У вас пока нет привычек. Нажмите "+", чтобы добавить первую.</p>';
+                return;
+            }
+            currentUserHabits.forEach(habit => {
+                const today = getTodayDateString();
+                const isActionDoneToday = habit.lastActionDate === today;
+
+                const card = document.createElement('div');
+                card.className = 'habit-card';
+                card.innerHTML = `
+                    <div class="avatar"><img src="${habit.imageUrl}" alt="${habit.name}" onerror="this.onerror=null;this.src='https://placehold.co/60x60/8fbc94/22222d?text=...';"></div>
+                    <div class="habit-info">
+                        <h3>${habit.name}</h3>
+                        <div class="habit-streak">
+                            <i class="fas fa-fire"></i>
+                            <span>${habit.streak}</span>
+                        </div>
+                    </div>
+                    <div class="habit-actions">
+                        <i class="fas fa-ellipsis-v menu-dots" data-habit-id="${habit.id}"></i>
+                        <button class="action-btn skip-btn ${isActionDoneToday ? 'disabled' : ''}" data-habit-id="${habit.id}"><i class="fas fa-times"></i></button>
+                        <button class="action-btn complete-btn ${isActionDoneToday ? 'disabled' : ''}" data-habit-id="${habit.id}"><i class="fas fa-check"></i></button>
+                    </div>
+                `;
+                habitsList.appendChild(card);
+            });
+        }
+        
+        function renderRatings() {
+            ratingList.innerHTML = '';
+            const userRatings = Object.values(state.users).map(user => {
+                const userHabits = Object.values(state.habits).filter(h => h.userId === user.id);
+                const totalStreak = userHabits.reduce((sum, h) => sum + h.streak, 0);
+                const avgStreak = userHabits.length > 0 ? (totalStreak / userHabits.length) : 0;
+                return { ...user, avgStreak: avgStreak.toFixed(1) };
+            });
+
+            userRatings.sort((a, b) => b.avgStreak - a.avgStreak);
+
+            userRatings.forEach((user, index) => {
+                const card = document.createElement('div');
+                card.className = 'rating-card';
+                card.innerHTML = `
+                    <span class="place">${index + 1}</span>
+                    <div class="avatar"><i class="fas ${user.avatar}"></i></div>
+                    <div class="user-info">
+                        <h3>${user.name}</h3>
+                        <p>Рейтинг: ${user.avgStreak}</p>
+                    </div>
+                    <button class="view-habits-btn" data-user-id="${user.id}"><i class="fas fa-search"></i></button>
+                `;
+                ratingList.appendChild(card);
+            });
+        }
+
+        function renderChat() {
+            chatMessagesContainer.innerHTML = '';
+            state.chat.forEach(msg => {
+                const user = state.users[msg.userId];
+                if (!user) return;
+                const messageEl = document.createElement('div');
+                messageEl.className = `chat-message ${msg.userId === CURRENT_USER_ID ? 'current-user' : ''}`;
+                messageEl.innerHTML = `
+                    <div class="avatar"><i class="fas ${user.avatar}"></i></div>
+                    <div class="message-content">
+                        <div class="author">${user.name}</div>
+                        <div class="text">${msg.text}</div>
+                    </div>
+                `;
+                chatMessagesContainer.append(messageEl);
+            });
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }
+
+        function updateProfileInfo() {
+            const currentUser = state.users[CURRENT_USER_ID];
+            profileNameEl.textContent = currentUser.name;
+            const profileAvatar = document.querySelector('.profile-info .avatar i');
+            profileAvatar.className = `fas ${currentUser.avatar}`;
+            
+            const remainingFreezes = 5 - currentUser.freezesUsed;
+            profileFreezesEl.innerHTML = `<i class="fas fa-snowflake"></i>Заморозок: ${remainingFreezes}`;
+            
+            const userRatings = Object.values(state.users).map(user => {
+                const userHabits = Object.values(state.habits).filter(h => h.userId === user.id);
+                const totalStreak = userHabits.reduce((sum, h) => sum + h.streak, 0);
+                const avgStreak = userHabits.length > 0 ? (totalStreak / userHabits.length) : 0;
+                return { id: user.id, avgStreak };
+            }).sort((a, b) => b.avgStreak - a.avgStreak);
+
+            const currentUserRank = userRatings.findIndex(u => u.id === CURRENT_USER_ID) + 1;
+            profileRatingEl.textContent = `rating: ${currentUserRank}`;
+        }
+        
+        // --- АВТОРИЗАЦИЯ ---
+        function handleLogin() {
+            const username = loginUsernameInput.value;
+            const password = loginPasswordInput.value;
+            
+            const user = Object.values(state.users).find(u => u.name === username);
+
+            if (user && user.password === password) {
+                CURRENT_USER_ID = user.id;
+                loginErrorEl.textContent = '';
+                showPage('habits-page');
+                checkAllStreaks();
+                saveState();
+                renderAll();
+            } else {
+                loginErrorEl.textContent = 'Неверный логин или пароль';
+            }
+        }
+
+        loginBtn.addEventListener('click', handleLogin);
+        loginPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+
+        // --- ОБРАБОТЧИКИ СОБЫТИЙ (ОСНОВНОЕ ПРИЛОЖЕНИЕ) ---
+        menuButtons.forEach(btn => btn.addEventListener('click', openMenu));
+        menuCloseBtn.addEventListener('click', closeMenu);
+        menuOverlay.addEventListener('click', closeMenu);
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage(e.currentTarget.dataset.page + '-page');
+            });
+        });
+        
+        modalCloseBtns.forEach(btn => btn.addEventListener('click', (e) => closeModal(e.target.closest('.modal'))));
+
+        addHabitBtn.addEventListener('click', () => {
+            loaderContainer.style.display = 'none';
+            addHabitForm.style.display = 'block';
+            openModal(addHabitModal);
+        });
+
+        saveHabitBtn.addEventListener('click', async () => {
+            const name = newHabitNameInput.value.trim();
+            if (!name) return;
+
+            loaderContainer.style.display = 'block';
+            addHabitForm.style.display = 'none';
+
+            try {
+                const imageUrl = await generateHabitImage(name);
+                
+                const newHabit = {
+                    id: 'habit' + Date.now(),
+                    userId: CURRENT_USER_ID,
+                    name: name,
+                    imageUrl: imageUrl,
+                    streak: 0,
+                    lastActionDate: null,
+                    history: {}
+                };
+                state.habits[newHabit.id] = newHabit;
+                
+                saveState();
+                renderAll();
+                newHabitNameInput.value = '';
+                closeModal(addHabitModal);
+
+            } catch (error) {
+                console.error("Image generation failed:", error);
+                alert("Не удалось сгенерировать иконку. Попробуйте снова.");
+                loaderContainer.style.display = 'none';
+                addHabitForm.style.display = 'block';
+            }
+        });
+
+        habitsList.addEventListener('click', (e) => {
+            const today = getTodayDateString();
+            const completeBtn = e.target.closest('.complete-btn');
+            if (completeBtn && !completeBtn.classList.contains('disabled')) {
+                const habitId = completeBtn.dataset.habitId;
+                const habit = state.habits[habitId];
+                habit.streak++;
+                habit.lastActionDate = today;
+                habit.history[today] = 1;
+                saveState();
+                renderAll();
+            }
+
+            const skipBtn = e.target.closest('.skip-btn');
+            if (skipBtn && !skipBtn.classList.contains('disabled')) {
+                const habitId = skipBtn.dataset.habitId;
+                const habit = state.habits[habitId];
+                habit.lastActionDate = today;
+                habit.history[today] = 0;
+                saveState();
+                renderAll();
+            }
+
+            const menuDots = e.target.closest('.menu-dots');
+            if (menuDots) {
+                const habitId = menuDots.dataset.habitId;
+                showChart(habitId);
+            }
+        });
+
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (habitToDeleteId) {
+                delete state.habits[habitToDeleteId];
+                habitToDeleteId = null;
+                saveState();
+                renderAll();
+                closeModal(confirmDeleteModal);
+            }
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            habitToDeleteId = null;
+            closeModal(confirmDeleteModal);
+        });
+
+        
+        ratingList.addEventListener('click', (e) => {
+            const viewBtn = e.target.closest('.view-habits-btn');
+            if (viewBtn) {
+                const userId = viewBtn.dataset.userId;
+                const user = state.users[userId];
+                const userHabits = Object.values(state.habits).filter(h => h.userId === userId);
+                
+                document.getElementById('modal-user-name').textContent = `Привычки: ${user.name}`;
+                const listEl = document.getElementById('modal-user-habits-list');
+                listEl.innerHTML = '';
+                if (userHabits.length === 0) {
+                    listEl.innerHTML = '<li>У пользователя пока нет привычек.</li>';
+                } else {
+                    userHabits.forEach(h => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${h.name}</span><span><i class="fas fa-fire"></i> ${h.streak}</span>`;
+                        listEl.appendChild(li);
+                    });
+                }
+                openModal(viewUserHabitsModal);
+            }
+        });
+
+        function handleSendMessage() {
+            const text = chatInput.value.trim();
+            if (text) {
+                const newMessage = {
+                    userId: CURRENT_USER_ID,
+                    text: text
+                };
+                state.chat.push(newMessage);
+                if (state.chat.length > 30) {
+                    state.chat.shift();
+                }
+                saveState();
+                renderChat();
+                chatInput.value = '';
+            }
+        }
+
+        sendBtn.addEventListener('click', handleSendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+        
+        // --- КАСТОМИЗАЦИЯ АВАТАРА ---
+        profileAvatarBtn.addEventListener('click', () => {
+            avatarSelection.innerHTML = '';
+            AVATAR_OPTIONS.forEach(iconClass => {
+                const option = document.createElement('div');
+                option.className = 'avatar-option';
+                option.dataset.icon = iconClass;
+                option.innerHTML = `<i class="fas ${iconClass}"></i>`;
+                avatarSelection.appendChild(option);
+            });
+            openModal(avatarModal);
+        });
+
+        avatarSelection.addEventListener('click', (e) => {
+            const option = e.target.closest('.avatar-option');
+            if (option) {
+                const iconClass = option.dataset.icon;
+                state.users[CURRENT_USER_ID].avatar = iconClass;
+                saveState();
+                updateProfileInfo();
+                closeModal(avatarModal);
+            }
+        });
+        
+        // --- ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (ИИ) ---
+        async function generateHabitImage(habitName) {
+            const apiKey = ""; // API-ключ будет предоставлен средой выполнения
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+            
+            const prompt = `minimalist icon, ${habitName}, simple logo, vector art style, on a solid color background, no text, 2d`;
+
+            const payload = {
+                instances: [{ prompt: prompt }],
+                parameters: { "sampleCount": 1 }
+            };
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+            } else {
+                throw new Error("No image data in API response");
+            }
+        }
+
+        function showChart(habitId) {
+            const habit = state.habits[habitId];
+            chartHabitName.textContent = `График: ${habit.name}`;
+
+            const labels = [];
+            const data = [];
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(getTodayDateString());
+                date.setDate(date.getDate() - i);
+                const dateString = date.toISOString().split('T')[0];
+                labels.push(date.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit'}));
+                
+                if (habit.history[dateString] === 1) data.push(1);
+                else if (habit.history[dateString] === 0) data.push(0);
+                else data.push(null);
+            }
+
+            if (habitChart) habitChart.destroy();
+
+            const ctx = document.getElementById('habitChart').getContext('2d');
+            habitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Прогресс',
+                        data: data,
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        fill: true,
+                        tension: 0.1,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: 'white',
+                                callback: function(value) {
+                                    if (value === 1) return 'Выполнено';
+                                    if (value === 0) return 'Пропущено';
+                                    return '';
+                                }
+                            },
+                             grid: { color: 'rgba(255, 255, 255, 0.2)' }
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.2)' }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            chartDeleteHabitBtn.onclick = () => {
+                closeModal(chartModal);
+                habitToDeleteId = habitId;
+                openModal(confirmDeleteModal);
+            };
+
+            openModal(chartModal);
+        }
+
+        // --- ИНИЦИАЛИЗАЦИЯ ---
+        loadState();
+    });
+    </script>
+</body>
+</html>
